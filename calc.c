@@ -1,35 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TOTAL 4
+#define STRLEN 32
 
 void main_menu();
-int** create_matrix();
-void modify_matrix(int**);
-void loop(char*, int**, int**);
-void operate_matrix(int**);
-void print_matrix(int**);
-void remove_matrix(int**);
+char*** create_matrix();
+void modify_matrix(char***);
+void loop(char*, char***);
+void operate_matrix(char***);
+void print_matrix(char***);
+void remove_matrix(char***);
 
 int main( void ){
-	char *a = (char*)malloc(sizeof(char));
-	int **matrix1 = NULL, **matrix2 = NULL;
-	loop(a, matrix1, matrix2);
+	char a[STRLEN];
+	char*** matrix1;
+	loop(a, matrix1);
 	return 0;
 }
 
-void loop(char* a, int** matrix1, int** matrix2){
+void loop(char* a, char*** matrix1){
 
 	// Print the menu
 	main_menu();
 
 	// Get user input
-	*a = getchar();
-
-	// Protect against newline
-	while(*a == '\n'){
-		*a = getchar();		
-	}
+	scanf("%s", a);
 
 	if(*a == '1'){
 		if(matrix1 == NULL){
@@ -37,9 +32,7 @@ void loop(char* a, int** matrix1, int** matrix2){
 			printf("\nAdding matrix: \n");
 			print_matrix(matrix1);
 		}else{
-			matrix2 = create_matrix();
-			printf("Adding matrix: \n");
-			print_matrix(matrix2);
+			printf("Matrix Full");
 		}
 	}else if(*a == '2'){
 		remove_matrix(matrix1);
@@ -55,13 +48,12 @@ void loop(char* a, int** matrix1, int** matrix2){
 			remove_matrix(matrix1);
 		}
 		free(matrix1);
-		free(a);
 		exit(0);
 	}else{
-		printf("\nChoice [ %c ] not found, try again!\n", *a);
+		printf("\nChoice [ %s ] not found, try again!\n", a);
 	}
 
-	loop(a, matrix1, matrix2);
+	loop(a, matrix1);
 	
 	return;
 }
@@ -74,53 +66,70 @@ void main_menu(){
 	return;
 }
 
-int** create_matrix(){
+char*** create_matrix(){
+	//char *m = (char*)malloc(STRLEN), *n = (char*)malloc(STRLEN);
 	int m, n;
-	printf("\nEnter the size of matrix: m x n\n");
-	printf("m = ");
-	scanf("%d", &m);
-	printf("n = ");
+
+	// Get size of array m x n
+	printf("\nEnter the size of matrix: m,n\n");
+	scanf("%d,", &m);
 	scanf("%d", &n);
 
 	// Pointers to array pointers
-	int **matrix = (int**) malloc(sizeof(int*) * (m + 1));
+	char*** matrix = (char***)malloc(sizeof(char**) * (m + 1));
 
 	// Matrix size stored in first array
-	matrix[0] = (int*)malloc(sizeof(int) * 2);
-	matrix[0][0] = m;
-	matrix[0][1] = n;
+	matrix[0] = (char**)malloc(sizeof(char*) * 2);
+	char *cm = (char*)malloc(STRLEN), *cn = (char*)malloc(STRLEN);
+	sprintf(cm, "%d", m);
+	sprintf(cn, "%d", n);
+	matrix[0][0] = cm;
+	matrix[0][1] = cn;
 
 	// Allocate space for numbers
 	for(int i = 1; i < m + 1; i++){
-		printf("Allocating size: %lud ;  N is : %d ; i is %d\n", sizeof(int)*n, n, i);
-		matrix[i] = (int*)malloc(sizeof(int) * n);
+		printf("Allocating size: %lu ;  N is : %d ; i is %d\n", sizeof(char*)*n, n, i);
+		matrix[i] = (char**)malloc(sizeof(char*) * n);
 	}
 
 	// Fill matrix
 	for(int i = 1; i < m + 1; i++){
 		printf("Row %d\n", i);
 		for(int j = 0; j < n; j++){
+
+			char* l = (char*)malloc(STRLEN);
+		
 			printf("[%d][%d] = ", i - 1, j);
-			scanf("%d", &matrix[i][j]);
+			scanf("%s", l);
+
+			matrix[i][j] = l;
 		}
 		printf("\n");
 	}
 	return matrix;
 }
 
-void operate_matrix(int** matrix){
-	char op[256];
+void operate_matrix(char*** matrix){
+	char op[STRLEN];
 
 	printf("\n");
 	print_matrix(matrix);
 	printf("Enter operation: ");
 	scanf("%s", op);
-	printf("The operation is: %s", op);
+	printf("The operation is: %s\n", op);
+
+	if(op[0] == 'R' || op[0] == 'r'){
+		int r1 = (int)op[1];
+
+		printf("The first row is: %d\n", r1);
+	}
+
 	return;
 }
 
-void modify_matrix(int** matrix){
-	int j, k, l;
+void modify_matrix(char*** matrix){
+	int j, k;
+	char* l = malloc(STRLEN);
 	printf("Enter spot to be edited j,k (-1 for all): ");
 	scanf("%d,", &j);
 
@@ -131,9 +140,13 @@ void modify_matrix(int** matrix){
 
 	scanf("%d", &k);
 
-	printf("[%d][%d] Old value: %d\n", j, k, matrix[j + 1][k]);
+	printf("[%d][%d] Old value: %s\n", j, k, matrix[j + 1][k]);
 	printf("Enter new value: ");
-	scanf("%d", &l);
+	scanf("%s", l);
+
+	// Free old value
+	free(matrix[j + 1][k]);
+	
 	matrix[j + 1][k] = l;
 
 	printf("The new matrix is:\n");
@@ -142,13 +155,18 @@ void modify_matrix(int** matrix){
 	return;
 }
 
-void print_matrix(int** matrix){
-	printf("m = %d 	n = %d\n", matrix[0][0], matrix[0][1]);
+void print_matrix(char*** matrix){
+	printf("m = %s 	n = %s\n", matrix[0][0], matrix[0][1]);
+
+	int m, n;
+
+	sscanf(matrix[0][0], "%d", &m);
+	sscanf(matrix[0][1], "%d", &n);
 
 	// Print the matrix
-	for(int i = 1; i < matrix[0][0] + 1; i++){
-		for(int j = 0; j < matrix[0][1]; j++){
-			printf("[%d] ", matrix[i][j]);
+	for(int i = 1; i < m + 1; i++){
+		for(int j = 0; j < n; j++){
+			printf("[%s] ", matrix[i][j]);
 		}
 		printf("\n");
 	}
@@ -156,13 +174,19 @@ void print_matrix(int** matrix){
 	return;
 }
 
-void remove_matrix(int** matrix){
-	int m = matrix[0][0];
+void remove_matrix(char*** matrix){
+	int m, n;
+	sscanf(matrix[0][0], "%d", &m);
+	sscanf(matrix[0][1], "%d", &n);
 
 	for(int i = 0; i < m + 1; i++){
+		for(int j = 0; j < n; j++){
+			free(matrix[i][j]);
+		}
 		free(matrix[i]);
-		printf("Freeing: matrix[%d]\n", i);
 	}
+
+	free(matrix);
 	
 	return;	
 }
