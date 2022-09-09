@@ -3,26 +3,35 @@
 
 #define TOTAL 4
 
-void main_menu(int*);
+void main_menu();
 int** create_matrix();
 void modify_matrix(int**);
-void loop(int*, int**, int**);
+void loop(char*, int**, int**);
 void operate_matrix(int**);
 void print_matrix(int**);
 void remove_matrix(int**);
 
 int main( void ){
-	int *a = (int*)malloc(sizeof(char));
+	char *a = (char*)malloc(sizeof(char));
 	int **matrix1 = NULL, **matrix2 = NULL;
 	loop(a, matrix1, matrix2);
 	return 0;
 }
 
-void loop(int* a, int** matrix1, int** matrix2){
-	
-	main_menu(a);
+void loop(char* a, int** matrix1, int** matrix2){
 
-	if(*a == 1){
+	// Print the menu
+	main_menu();
+
+	// Get user input
+	*a = getchar();
+
+	// Protect against newline
+	while(*a == '\n'){
+		*a = getchar();		
+	}
+
+	if(*a == '1'){
 		if(matrix1 == NULL){
 			matrix1 = create_matrix();
 			printf("\nAdding matrix: \n");
@@ -32,15 +41,15 @@ void loop(int* a, int** matrix1, int** matrix2){
 			printf("Adding matrix: \n");
 			print_matrix(matrix2);
 		}
-	}else if(*a == 2){
+	}else if(*a == '2'){
 		remove_matrix(matrix1);
-	}else if(*a == 3){
+	}else if(*a == '3'){
 		print_matrix(matrix1);	
-	}else if(*a == 4){
+	}else if(*a == '4'){
 		modify_matrix(matrix1);
-	}else if(*a == 5){
+	}else if(*a == '5'){
 		operate_matrix(matrix1);
-	}else if(*a == 6){
+	}else if(*a == '6'){
 		// Cleanup before quitting
 		if(matrix1 != NULL){
 			remove_matrix(matrix1);
@@ -49,12 +58,7 @@ void loop(int* a, int** matrix1, int** matrix2){
 		free(a);
 		exit(0);
 	}else{
-		printf("\nNumber %d not found, try again!\n", *a);
-
-		//TODO this nees to not clear the enite buffer. Just bad input like '.' or '~' that causes problems.
-		while(getchar() != '\n'){
-			continue;
-		}
+		printf("\nChoice [ %c ] not found, try again!\n", *a);
 	}
 
 	loop(a, matrix1, matrix2);
@@ -62,15 +66,11 @@ void loop(int* a, int** matrix1, int** matrix2){
 	return;
 }
 
-void main_menu(int *a){
+void main_menu(){
 	printf("\n");
 	printf("Please select a operation:\n");
 	printf("1) Add matrix\n2) Remove Matrix\n3) List Matrix\n4) Modify Matrix\n5) Operate matrix\n6) Quit\n$> ");
 
-	scanf("%d", a);
-	if(*a == 0){
-		*a = -1;
-	}
 	return;
 }
 
