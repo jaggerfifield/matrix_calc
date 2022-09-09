@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #define STRLEN 32
 
@@ -10,11 +11,11 @@ void modify_matrix(char***);
 void loop(char*, char***);
 void operate_matrix(char***);
 void print_matrix(char***);
-void remove_matrix(char***);
+char*** remove_matrix(char***);
 
 int main( void ){
 	char a[STRLEN];
-	char*** matrix1;
+	char*** matrix1 = NULL;
 	loop(a, matrix1);
 	return 0;
 }
@@ -36,7 +37,7 @@ void loop(char* a, char*** matrix1){
 			printf("Matrix Full");
 		}
 	}else if(*a == '2'){
-		remove_matrix(matrix1);
+		matrix1 = remove_matrix(matrix1);
 	}else if(*a == '3'){
 		print_matrix(matrix1);	
 	}else if(*a == '4'){
@@ -46,9 +47,8 @@ void loop(char* a, char*** matrix1){
 	}else if(*a == '6'){
 		// Cleanup before quitting
 		if(matrix1 != NULL){
-			remove_matrix(matrix1);
+			matrix1 = remove_matrix(matrix1);
 		}
-		free(matrix1);
 		exit(0);
 	}else{
 		printf("\nChoice [ %s ] not found, try again!\n", a);
@@ -68,7 +68,6 @@ void main_menu(){
 }
 
 char*** create_matrix(){
-	//char *m = (char*)malloc(STRLEN), *n = (char*)malloc(STRLEN);
 	int m, n;
 	unsigned int max_str_length = 0;
 
@@ -91,18 +90,19 @@ char*** create_matrix(){
 
 	// Allocate space for numbers
 	for(int i = 1; i < m + 1; i++){
-		printf("Allocating size: %lu ;  N is : %d ; i is %d\n", sizeof(char*)*n, n, i);
+		printf("Allocating [%lu] bits for row [%d]\n", sizeof(char*)*n*CHAR_BIT, i);
 		matrix[i] = (char**)malloc(sizeof(char*) * n);
 	}
 
 	// Fill matrix
 	for(int i = 1; i < m + 1; i++){
-		printf("Row %d\n", i);
+		printf("Row %d : \n", i);
 		for(int j = 0; j < n; j++){
 
 			char* l = (char*)malloc(STRLEN);
-		
-			printf("[%d][%d] = ", i - 1, j);
+
+			// The matrix is displayed differently than it is stored 
+			printf("[%d][%d] = ", i, j + 1);
 			scanf("%s", l);
 
 			if(max_str_length < strlen(l)){
@@ -197,13 +197,23 @@ void print_matrix(char*** matrix){
 	return;
 }
 
-void remove_matrix(char*** matrix){
+char*** remove_matrix(char*** matrix){
 	int m, n;
 	sscanf(matrix[0][0], "%d", &m);
 	sscanf(matrix[0][1], "%d", &n);
 
-	for(int i = 0; i < m + 1; i++){
+	printf("\n");
+
+	// Free matrix header, this is needed b/c the matrix could be a different size
+	free(matrix[0][0]);		// m Size
+	free(matrix[0][1]);		// n Size
+	free(matrix[0][2]);		// max_str_length
+	free(matrix[0]);
+
+	// Free matrix
+	for(int i = 1; i < m+1; i++){
 		for(int j = 0; j < n; j++){
+			printf("Freeing: [%d][%d] = %s\n", i, j, matrix[i][j]);
 			free(matrix[i][j]);
 		}
 		free(matrix[i]);
@@ -211,5 +221,5 @@ void remove_matrix(char*** matrix){
 
 	free(matrix);
 	
-	return;	
+	return NULL;	
 }
