@@ -15,6 +15,7 @@ char*** create_matrix();
 char*** modify_matrix(char***);
 char*** loop(char***);
 void operate_matrix(char***);
+double add(double, double);
 int is_row_digit(char**, int);
 void print_matrix(char***);
 char*** remove_matrix(char***);
@@ -170,14 +171,33 @@ void operate_matrix(char*** matrix){
 		printf("First row digit check: %d\n", is_row_digit(matrix[row1], n));
 		printf("Second row digit check: %d\n", is_row_digit(matrix[row2], n));	
 
-		// TODO the lines above check if the values in the rows are all digits
-		// If some are not, use strcat to finish the operation, else use math.
-		// This requires two different solving function to be implmented.
-		// add_string(char* a, char*b);
-		// add(int a, int b);		// TODO fractions will be broken if we use int
+		if(is_row_digit(matrix[row1], n) && is_row_digit(matrix[row2], n)){
+			for(int i = 0; i < n; i++){
+				double a, b, ans;
 
+				// Get and convert the values to double for addition
+				sscanf(matrix[row1][i], "%lf", &a);
+				sscanf(matrix[row2][i], "%lf", &b);
+
+				ans = add(a, b);
+
+				sprintf(matrix[row1][i], "%f", ans);
+
+			}
+		}
 	}
 	return;
+}
+
+double add(double a, double b){
+
+	return a + b;
+}
+
+char* add_string(char* a, char* b){
+	a = strcat(a, "+");
+	a = strcat(a, b);
+	return a;
 }
 
 int is_row_digit(char** row, int n){
