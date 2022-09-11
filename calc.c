@@ -2,26 +2,36 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <ctype.h>
 
 #define STRLEN 32
 
+// TODO
+// char** export_matrix(cahr***);
+// char** import_matrix(char*);
+
 void main_menu();
 char*** create_matrix();
-void modify_matrix(char***);
-void loop(char*, char***);
+char*** modify_matrix(char***);
+char*** loop(char***);
 void operate_matrix(char***);
+int is_row_digit(char**, int);
 void print_matrix(char***);
 char*** remove_matrix(char***);
 
 int main( void ){
-	char a[STRLEN];
 	char*** matrix1 = NULL;
-	loop(a, matrix1);
+	
+	while(1){
+		matrix1 = loop(matrix1);
+	}
+	
 	return 0;
 }
 
-void loop(char* a, char*** matrix1){
-
+char*** loop(char*** matrix1){
+	char a[STRLEN];
+	
 	// Print the menu
 	main_menu();
 
@@ -41,7 +51,7 @@ void loop(char* a, char*** matrix1){
 	}else if(*a == '3'){
 		print_matrix(matrix1);	
 	}else if(*a == '4'){
-		modify_matrix(matrix1);
+		matrix1 = modify_matrix(matrix1);
 	}else if(*a == '5'){
 		operate_matrix(matrix1);
 	}else if(*a == '6'){
@@ -54,9 +64,7 @@ void loop(char* a, char*** matrix1){
 		printf("\nChoice [ %s ] not found, try again!\n", a);
 	}
 
-	loop(a, matrix1);
-	
-	return;
+	return matrix1;
 }
 
 void main_menu(){
@@ -69,7 +77,12 @@ void main_menu(){
 
 char*** create_matrix(){
 	int m, n;
+	char *name = (char*)malloc(STRLEN);
 	unsigned int max_str_length = 0;
+
+	// Get matrix name
+	printf("Enter matrix name: ");
+	scanf("%s", name);
 
 	// Get size of array m x n
 	printf("\nEnter the size of matrix: m,n\n");
@@ -81,12 +94,14 @@ char*** create_matrix(){
 
 	// Matrix size stored in first array
 	// This array is [0] = size m ; [1] = size n; [2] = largest string len
-	matrix[0] = (char**)malloc(sizeof(char*) * 3);
+	matrix[0] = (char**)malloc(sizeof(char*) * 4);
 	char *cm = (char*)malloc(STRLEN), *cn = (char*)malloc(STRLEN);
 	sprintf(cm, "%d", m);
 	sprintf(cn, "%d", n);
 	matrix[0][0] = cm;
 	matrix[0][1] = cn;
+
+	matrix[0][3] = name;
 
 	// Allocate space for numbers
 	for(int i = 1; i < m + 1; i++){
@@ -123,49 +138,120 @@ char*** create_matrix(){
 }
 
 void operate_matrix(char*** matrix){
-	char op[STRLEN];
+
+	int a, m, n, row1, row2;
+
+	// Load the size from matirx into int variables
+	sscanf(matrix[0][0], "%d", &m);
+	sscanf(matrix[0][1], "%d", &n);
 
 	printf("\n");
 	print_matrix(matrix);
-	printf("Enter operation: ");
-	scanf("%s", op);
-	printf("The operation is: %s\n", op);
 
-	if(op[0] == 'R' || op[0] == 'r'){
-		int r1 = (int)op[1];
+	// Get input
+	printf("Enter operation:\n1) ADD\t2)SUB\t3)sMUL\n$> ");
+	scanf("%d", &a);
 
-		printf("The first row is: %d\n", r1);
+	if(a < 1 || a > 4){
+		printf("Bad selection, try again!\n");
+		return;
+	}
+	
+	printf("Enter first row: ");
+	scanf("%d", &row1);
+
+	if(a != 3){
+		printf("Enter second row: ");
+		scanf("%d", &row2);
 	}
 
+	// Operate on matrix
+	if(a == 1){
+		printf("First row digit check: %d\n", is_row_digit(matrix[row1], n));
+		printf("Second row digit check: %d\n", is_row_digit(matrix[row2], n));	
+
+		// TODO the lines above check if the values in the rows are all digits
+		// If some are not, use strcat to finish the operation, else use math.
+		// This requires two different solving function to be implmented.
+		// add_string(char* a, char*b);
+		// add(int a, int b);		// TODO fractions will be broken if we use int
+
+	}
 	return;
 }
 
-void modify_matrix(char*** matrix){
-	int j, k;
-	char* l = malloc(STRLEN);
+int is_row_digit(char** row, int n){
+	int is_digit, row_size;
+
+	for(int j = 0; j < n; j++){
+		row_size = strlen(row[j]);
+		for(int k = 0; k < row_size; k++){
+			is_digit = 1;
+			if(!isdigit(row[j][k])){
+				if(row[j][k] == '.' || row[j][k] == '/' || row[j][k] == '-'){
+					continue;
+				}else{
+					is_digit = 0;	
+				}
+			}
+		}			
+	}
+	
+	return is_digit;
+}
+
+char*** modify_matrix(char*** matrix){
+	int j, k, m, n;
+
+	// Load the size from matirx into int variables
+	sscanf(matrix[0][0], "%d", &m);
+	sscanf(matrix[0][1], "%d", &n);
+
 	printf("Enter spot to be edited j,k (-1 for all): ");
 	scanf("%d,", &j);
 
 	if(j == -1){
-		printf("WIP");
-		return;
+		for(int x = 1; x < m + 1; x++){
+			for(int y = 0; y < n; y++){
+				char* l = malloc(STRLEN);
+				printf("[%d][%d] Old value: %s\n", x, y + 1, matrix[x][y]);
+				printf("Enter new value or . to keep: ");
+				scanf("%s", l);
+
+				if(*l != '.'){
+					// Free old value
+					free(matrix[x][y]);	
+					matrix[x][y] = l;
+				}else{
+					free(l);
+				}					
+			}
+		}
+		return matrix;
 	}
 
 	scanf("%d", &k);
 
-	printf("[%d][%d] Old value: %s\n", j, k, matrix[j + 1][k]);
+	if(j > m || k > n || j < 1 || k < 1){
+		printf("Invalid selection!\n");
+		return matrix;
+	}
+
+	char* l = malloc(STRLEN);
+	
+	printf("[%d][%d] Old value: %s\n", j, k, matrix[j][k - 1]);
 	printf("Enter new value: ");
 	scanf("%s", l);
 
 	// Free old value
-	free(matrix[j + 1][k]);
+	free(matrix[j][k - 1]);
 	
-	matrix[j + 1][k] = l;
+	matrix[j][k - 1] = l;
 
 	printf("The new matrix is:\n");
 	print_matrix(matrix);
 
-	return;
+	return matrix;
 }
 
 void print_matrix(char*** matrix){
@@ -208,6 +294,7 @@ char*** remove_matrix(char*** matrix){
 	free(matrix[0][0]);		// m Size
 	free(matrix[0][1]);		// n Size
 	free(matrix[0][2]);		// max_str_length
+	free(matrix[0][3]);		// Matrix name
 	free(matrix[0]);
 
 	// Free matrix
