@@ -106,7 +106,7 @@ char*** create_matrix(){
 
 	// Allocate space for numbers
 	for(int i = 1; i < m + 1; i++){
-		printf("Allocating [%lu] bits for row [%d]\n", sizeof(char*)*n*CHAR_BIT, i);
+		printf("Allocating [%llu] bits for row [%d]\n", sizeof(char*)*n*CHAR_BIT, i);
 		matrix[i] = (char**)malloc(sizeof(char*) * n);
 	}
 
@@ -233,7 +233,7 @@ char*** modify_matrix(char*** matrix){
 	if(j == -1){
 		for(int x = 1; x < m + 1; x++){
 			for(int y = 0; y < n; y++){
-				char* l = malloc(STRLEN);
+				char* l = (char*)malloc(STRLEN);
 				printf("[%d][%d] Old value: %s\n", x, y + 1, matrix[x][y]);
 				printf("Enter new value or . to keep: ");
 				scanf("%s", l);
@@ -257,7 +257,7 @@ char*** modify_matrix(char*** matrix){
 		return matrix;
 	}
 
-	char* l = malloc(STRLEN);
+	char* l = (char*)malloc(STRLEN);
 	
 	printf("[%d][%d] Old value: %s\n", j, k, matrix[j][k - 1]);
 	printf("Enter new value: ");
